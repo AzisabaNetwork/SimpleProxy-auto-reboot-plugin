@@ -1,5 +1,7 @@
 # AutoReboot plugin
 
+Note: This plugin is very unstable, don't use it on production.
+
 ## Configuration
 
 ### Velocity
