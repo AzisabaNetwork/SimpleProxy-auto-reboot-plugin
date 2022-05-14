@@ -24,7 +24,8 @@ public class BackendMessageHandler extends AbstractMessageHandler {
             buffer.writeCharSequence(token, StandardCharsets.UTF_8);
             buffer.writeInt(Protocol.BP_REBOOT_ACK.length());
             buffer.writeCharSequence(Protocol.BP_REBOOT_ACK, StandardCharsets.UTF_8);
-            ch.pipeline().firstContext().writeAndFlush(buffer);
+            Protocol.writeByteArray(buffer, Protocol.readByteArray(buf));
+            ch.pipeline().firstContext().flush().writeAndFlush(buffer);
         } else {
             throw new IllegalArgumentException("Unknown packet id " + packetId);
         }

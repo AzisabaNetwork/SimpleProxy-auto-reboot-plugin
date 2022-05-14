@@ -28,6 +28,9 @@ public abstract class AbstractMessageHandler extends ChannelInboundHandlerAdapte
                 ctx.channel().pipeline().remove(this);
             }
             if (msg instanceof ByteBuf && process(ctx.channel(), (ByteBuf) msg)) {
+                if (count < THRESHOLD) {
+                    ctx.channel().pipeline().remove(this);
+                }
                 return;
             }
         } catch (Exception e) {
@@ -43,7 +46,8 @@ public abstract class AbstractMessageHandler extends ChannelInboundHandlerAdapte
                 if (DEBUG) {
                     buf.readerIndex(idx);
                     String s = buf.readCharSequence(Protocol.MAGIC.length(), StandardCharsets.UTF_8).toString();
-                    throw new IllegalArgumentException("Magic does not match (received " + Util.filterAscii(s) + ")");
+                    buf.readerIndex(idx); // set reader index before evaluating buf
+                    throw new IllegalArgumentException("Magic does not match (received " + Util.filterAscii(s) + ", buf: " + buf + ")");
                 } else {
                     throw new IllegalArgumentException("Magic does not match");
                 }

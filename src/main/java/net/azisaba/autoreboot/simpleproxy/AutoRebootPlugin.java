@@ -7,7 +7,8 @@ import net.azisaba.autoreboot.common.Util;
 import net.azisaba.autoreboot.common.util.LimitedArrayStack;
 import net.azisaba.autoreboot.simpleproxy.connection.ProxyMessageHandler;
 import net.azisaba.simpleProxy.api.event.EventHandler;
-import net.azisaba.simpleProxy.api.event.connection.RemoteConnectionInitEvent;
+import net.azisaba.simpleProxy.api.event.EventPriority;
+import net.azisaba.simpleProxy.api.event.connection.RemoteConnectionActiveEvent;
 import net.azisaba.simpleProxy.api.event.proxy.ProxyInitializeEvent;
 import net.azisaba.simpleProxy.api.plugin.Plugin;
 import net.azisaba.simpleProxy.api.yaml.YamlConfiguration;
@@ -52,8 +53,8 @@ public class AutoRebootPlugin extends Plugin {
         Util.validateToken(token);
     }
 
-    @EventHandler
-    public void onRemoteConnectionInit(RemoteConnectionInitEvent e) {
+    @EventHandler(priority = EventPriority.LOW)
+    public void onRemoteConnectionActivation(RemoteConnectionActiveEvent e) {
         if (e.getListenerInfo().getProtocol() != net.azisaba.simpleProxy.api.config.Protocol.TCP) {
             return;
         }
@@ -68,7 +69,8 @@ public class AutoRebootPlugin extends Plugin {
         knownSecrets.add(secret);
         Protocol.writeByteArray(buf, secret); // secret
         e.getChannel().pipeline().addFirst(new ProxyMessageHandler(this));
-        e.getChannel().eventLoop().execute(() -> e.getChannel().pipeline().firstContext().writeAndFlush(buf));
+        // flush is required before writeAndFlush because there is some unsent buffer
+        e.getChannel().flush().writeAndFlush(buf);
     }
 
     public boolean shouldReboot() {
