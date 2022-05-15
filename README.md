@@ -2,6 +2,8 @@
 
 Note: This plugin is (still) unstable, don't use it on production.
 
+oh, and the structure of this project is pretty bad, I know.
+
 ## Configuration
 
 ### Velocity
