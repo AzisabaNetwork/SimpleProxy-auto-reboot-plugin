@@ -1,19 +1,27 @@
 # AutoReboot plugin
 
-Note: This plugin is very unstable, don't use it on production.
+Note: This plugin is (still) unstable, don't use it on production.
 
 ## Configuration
 
 ### Velocity
 
 ```yml
-token: # pre-configured token (50 characters or more)
+redis:
+  hostname: localhost
+  port: 6379
+  username: # optional
+  password: # optional
 ```
 
 ### SimpleProxy
 
 ```yml
-token: # pre-configured token (50 characters or more)
+redis:
+  hostname: localhost
+  port: 6379
+  username: # optional
+  password: # optional
 
 # If true, the plugin will attempt to reboot the machine.
 # Otherwise, it will only send a notification and new connections will be denied.

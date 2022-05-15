@@ -13,21 +13,20 @@ java {
 repositories {
     mavenCentral()
     maven { url = uri("https://nexus.velocitypowered.com/repository/maven-public/") }
-    maven { url = uri("https://repo.blueberrymc.net/repository/maven-releases/") }
     maven { url = uri("https://repo.acrylicstyle.xyz/repository/maven-public/") }
     maven { url = uri("https://jitpack.io/") }
 }
 
 dependencies {
-    implementation("net.blueberrymc:native-util:2.1.0")
-    implementation("org.javassist:javassist:3.28.0-GA")
     implementation("com.github.oshi:oshi-core:6.1.6")
+    implementation("redis.clients:jedis:4.2.3")
     annotationProcessor("com.velocitypowered:velocity-api:3.0.1")
     compileOnly("com.velocitypowered:velocity-api:3.0.1")
     compileOnly("net.azisaba.simpleProxy:proxy:1.1.2") // AzisabaNetwork/SimpleProxy
     compileOnly("com.github.AzisabaNetwork:VelocityRedisBridge:b96753f4df") // AzisabaNetwork/VelocityRedisBridge
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+
 }
 
 tasks {

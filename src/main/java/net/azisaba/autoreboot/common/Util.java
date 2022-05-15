@@ -1,11 +1,19 @@
 package net.azisaba.autoreboot.common;
 
+import net.azisaba.autoreboot.common.network.data.InetAddressData;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class Util {
@@ -17,22 +25,6 @@ public class Util {
             return null;
         }
         return function.apply(t);
-    }
-
-    @Contract("null -> fail")
-    public static void validateToken(@Nullable String token) {
-        if (token == null) {
-            throw new IllegalArgumentException("token is null");
-        }
-        if (token.contains("\"")) {
-            throw new IllegalArgumentException("token cannot contain \"");
-        }
-        if (token.contains("\\")) {
-            throw new IllegalArgumentException("token cannot contain \\");
-        }
-        if (token.length() < 50) {
-            throw new IllegalArgumentException("token must be at least 50 characters long");
-        }
     }
 
     public static void reboot(int timeInMinutes, @Nullable String customRebootCommand) throws RuntimeException, IOException {
@@ -76,11 +68,35 @@ public class Util {
     }
 
     public static @NotNull String toHexString(byte @NotNull [] byteArray) {
-        return toHexString(byteArray, -1);
+        return toHexString(byteArray, 64);
     }
 
     @Contract(pure = true)
     public static @NotNull String filterAscii(@NotNull String str) {
         return str.replaceAll("[^\\x20-\\x7F]", "?");
+    }
+
+    public static <E> void forEachEnumeration(@NotNull Enumeration<E> enumeration, @NotNull Consumer<E> action) {
+        while (enumeration.hasMoreElements()) {
+            action.accept(enumeration.nextElement());
+        }
+    }
+
+    @Contract(pure = true)
+    public static @NotNull List<@NotNull InetAddressData> getIPAddressList() {
+        List<InetAddressData> list = new ArrayList<>();
+        try {
+            forEachEnumeration(
+                    NetworkInterface.getNetworkInterfaces(),
+                    networkInterface ->
+                            forEachEnumeration(
+                                    networkInterface.getInetAddresses(),
+                                    inetAddress ->
+                                            list.add(new InetAddressData(inetAddress instanceof Inet4Address, inetAddress.getHostAddress()))
+                            )
+            );
+        } catch (SocketException ignored) {
+        }
+        return list;
     }
 }

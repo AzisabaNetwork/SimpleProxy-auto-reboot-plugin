@@ -1,18 +1,21 @@
 package net.azisaba.autoreboot.simpleproxy;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import net.azisaba.autoreboot.common.Protocol;
+import net.azisaba.autoreboot.common.CommonLogger;
 import net.azisaba.autoreboot.common.Util;
+import net.azisaba.autoreboot.common.network.Protocol;
+import net.azisaba.autoreboot.common.network.Side;
+import net.azisaba.autoreboot.common.network.protocol.BackendboundRebootRequestPacket;
+import net.azisaba.autoreboot.common.util.JedisBox;
 import net.azisaba.autoreboot.common.util.LimitedArrayStack;
-import net.azisaba.autoreboot.simpleproxy.connection.ProxyMessageHandler;
+import net.azisaba.autoreboot.simpleproxy.network.ProxyPacketListenerImpl;
 import net.azisaba.simpleProxy.api.event.EventHandler;
 import net.azisaba.simpleProxy.api.event.EventPriority;
 import net.azisaba.simpleProxy.api.event.connection.RemoteConnectionActiveEvent;
-import net.azisaba.simpleProxy.api.event.proxy.ProxyInitializeEvent;
+import net.azisaba.simpleProxy.api.event.proxy.ProxyShutdownEvent;
 import net.azisaba.simpleProxy.api.plugin.Plugin;
 import net.azisaba.simpleProxy.api.yaml.YamlConfiguration;
 import net.azisaba.simpleProxy.api.yaml.YamlObject;
+import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.SystemInfo;
@@ -20,37 +23,56 @@ import oshi.software.os.OperatingSystem;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class AutoRebootPlugin extends Plugin {
     private static final int SECRET_LENGTH = 128;
     private final OperatingSystem operatingSystem = new SystemInfo().getOperatingSystem();
-    private final File configFile = new File("./plugins/AutoReboot/config.yml");
-    @NotNull public String token = "";
-    public boolean doRealReboot = false;
-    @Nullable public String customRebootCommand = null;
-    public boolean debugAlwaysReboot = false;
-    public long uptimeThreshold = 0;
+    private final ProxyPacketListenerImpl proxyPacketListener = new ProxyPacketListenerImpl(this);
+    private final JedisBox jedisBox;
+    public final boolean doRealReboot;
+    @Nullable
+    public final String customRebootCommand;
+    public final boolean debugAlwaysReboot;
+    public final long uptimeThreshold;
 
     // this thing can store up to 512 KiB of secrets
     // (SECRET_LENGTH * size / 1024) KiB
     public final LimitedArrayStack<byte[]> knownSecrets = new LimitedArrayStack<>(4096);
 
-    @EventHandler
-    public void onProxyInitialization(ProxyInitializeEvent e) {
+    public AutoRebootPlugin() {
         try {
+            File configFile = new File("./plugins/AutoReboot/config.yml");
             if (configFile.exists() && configFile.isFile()) {
                 YamlObject obj = new YamlConfiguration(configFile).asObject();
-                token = obj.getString("token");
+                YamlObject redisObj = Objects.requireNonNull(obj.getObject("redis"), "redis obj");
+                String redisHostname = redisObj.getString("hostname");
+                int redisPort = redisObj.getInt("port", 6379);
+                String redisUsername = redisObj.getString("username");
+                String redisPassword = redisObj.getString("password");
+                jedisBox = new JedisBox(
+                        Side.PROXY,
+                        CommonLogger.create(LogManager.getLogger("AutoReboot")),
+                        getProxyPacketListener(),
+                        redisHostname,
+                        redisPort,
+                        redisUsername,
+                        redisPassword);
                 doRealReboot = obj.getBoolean("do-real-reboot", false);
                 customRebootCommand = obj.getString("custom-reboot-command", null);
                 debugAlwaysReboot = obj.getBoolean("debug-always-reboot", false);
                 uptimeThreshold = obj.getLong("uptime-threshold", 0);
+            } else {
+                throw new RuntimeException("config.yml does not exist or is not a file.");
             }
         } catch (IOException ex) {
-            getLogger().error("Failed to load config.yml", ex);
+            throw new RuntimeException(ex);
         }
-        Util.validateToken(token);
+    }
+
+    @EventHandler
+    public void onProxyShutdown(ProxyShutdownEvent e) {
+        getJedisBox().close();
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -61,19 +83,22 @@ public class AutoRebootPlugin extends Plugin {
         if (!shouldReboot()) {
             return;
         }
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeCharSequence(Protocol.MAGIC, StandardCharsets.UTF_8); // magic
-        buf.writeCharSequence(token, StandardCharsets.UTF_8); // token
-        Protocol.writeString(buf, Protocol.PB_REBOOT); // packet id
         byte[] secret = Util.generateRandomBytes(SECRET_LENGTH);
         knownSecrets.add(secret);
-        Protocol.writeByteArray(buf, secret); // secret
-        e.getChannel().pipeline().addFirst(new ProxyMessageHandler(this));
-        // flush is required before writeAndFlush because there is some unsent buffer
-        e.getChannel().flush().writeAndFlush(buf);
+        getJedisBox().getPubSubHandler().publish(Protocol.PB_REBOOT.getName(), new BackendboundRebootRequestPacket(secret, Util.getIPAddressList()));
     }
 
     public boolean shouldReboot() {
         return debugAlwaysReboot || operatingSystem.getSystemUptime() > uptimeThreshold;
+    }
+
+    @NotNull
+    public JedisBox getJedisBox() {
+        return jedisBox;
+    }
+
+    @NotNull
+    public ProxyPacketListenerImpl getProxyPacketListener() {
+        return proxyPacketListener;
     }
 }
