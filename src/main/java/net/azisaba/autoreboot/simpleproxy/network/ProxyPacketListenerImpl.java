@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ProxyPacketListenerImpl implements ProxyPacketListener {
-    private static final AtomicBoolean acceptingRebootAck = new AtomicBoolean(true);
+    public static final AtomicBoolean rebootAccepted = new AtomicBoolean(false);
     private final AutoRebootPlugin plugin;
 
     public ProxyPacketListenerImpl(@NotNull AutoRebootPlugin plugin) {
@@ -32,7 +32,7 @@ public class ProxyPacketListenerImpl implements ProxyPacketListener {
             throw new IllegalStateException("Unknown secret " + Util.filterAscii(Util.toHexString(packet.getSecret())));
         }
 
-        if (!acceptingRebootAck.compareAndSet(true, false)) {
+        if (!rebootAccepted.compareAndSet(false, true)) {
             // we are no longer accepting reboot ack
             // the packet itself should be considered as valid, so we just return instead of throwing exception
             return;

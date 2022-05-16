@@ -5,7 +5,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -29,7 +31,7 @@ public class Util {
 
     public static void reboot(int timeInMinutes, @Nullable String customRebootCommand) throws RuntimeException, IOException {
         if (customRebootCommand != null && !customRebootCommand.isEmpty()) {
-            Runtime.getRuntime().exec(customRebootCommand);
+            setupPrinter(Runtime.getRuntime().exec(new String[]{"/bin/bash", "-c", customRebootCommand}));
             return;
         }
         String os = System.getProperty("os.name");
@@ -41,7 +43,7 @@ public class Util {
         } else {
             throw new RuntimeException("Unsupported operating system: " + os);
         }
-        Runtime.getRuntime().exec(command);
+        setupPrinter(Runtime.getRuntime().exec(command));
     }
 
     public static byte @NotNull [] generateRandomBytes(int length) {
@@ -92,11 +94,27 @@ public class Util {
                             forEachEnumeration(
                                     networkInterface.getInetAddresses(),
                                     inetAddress ->
-                                            list.add(new InetAddressData(inetAddress instanceof Inet4Address, inetAddress.getHostAddress()))
+                                            list.add(new InetAddressData(inetAddress instanceof Inet4Address, inetAddress.getHostAddress(), inetAddress.isLoopbackAddress()))
                             )
             );
         } catch (SocketException ignored) {
         }
         return list;
+    }
+
+    public static void setupPrinter(@NotNull Process process) {
+        Thread t = new Thread(() -> {
+            try (InputStreamReader isr = new InputStreamReader(process.getInputStream());
+                 BufferedReader br = new BufferedReader(isr)) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    System.out.println(line);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        t.setDaemon(true);
+        t.start();
     }
 }

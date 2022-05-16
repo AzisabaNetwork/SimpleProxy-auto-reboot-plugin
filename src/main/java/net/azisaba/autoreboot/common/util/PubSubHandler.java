@@ -7,6 +7,7 @@ import net.azisaba.autoreboot.common.network.NamedPacket;
 import net.azisaba.autoreboot.common.network.Packet;
 import net.azisaba.autoreboot.common.network.PacketListener;
 import net.azisaba.autoreboot.common.network.Protocol;
+import net.azisaba.autoreboot.common.network.RedisKeys;
 import net.azisaba.autoreboot.common.network.Side;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class PubSubHandler implements Closeable {
-    public static final byte @NotNull [] CHANNEL = "simpleproxy-auto-reboot-plugin:pubsub".getBytes(StandardCharsets.UTF_8);
+    public static final byte @NotNull [] CHANNEL = RedisKeys.PUBSUB.getBytes(StandardCharsets.UTF_8);
     private final Map<String, List<Consumer<ByteBuf>>> handlers = new ConcurrentHashMap<>();
     private final ArrayDeque<Consumer<byte[]>> pingPongQueue = new ArrayDeque<>();
     private final PubSubListener listener = new PubSubListener();

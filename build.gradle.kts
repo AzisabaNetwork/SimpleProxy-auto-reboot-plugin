@@ -23,7 +23,6 @@ dependencies {
     annotationProcessor("com.velocitypowered:velocity-api:3.0.1")
     compileOnly("com.velocitypowered:velocity-api:3.0.1")
     compileOnly("net.azisaba.simpleProxy:proxy:1.1.2") // AzisabaNetwork/SimpleProxy
-    compileOnly("com.github.AzisabaNetwork:VelocityRedisBridge:b96753f4df") // AzisabaNetwork/VelocityRedisBridge
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 

@@ -1,8 +1,8 @@
 # AutoReboot plugin
 
-Note: This plugin is (still) unstable, don't use it on production.
+## Prerequisites
 
-oh, and the structure of this project is pretty bad, I know.
+- [BungeeProxyAnnouncer](https://github.com/AzisabaNetwork/BungeeProxyAnnouncer/tree/velocity)
 
 ## Configuration
 
@@ -14,6 +14,10 @@ redis:
   port: 6379
   username: # optional
   password: # optional
+
+# the message when the proxy is restarting. you can use json or legacy (&) format.
+reboot-component: # list
+  - "&cThis proxy is restarting soon. Please reconnect to avoid disruption."
 ```
 
 ### SimpleProxy

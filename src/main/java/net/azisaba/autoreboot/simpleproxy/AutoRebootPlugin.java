@@ -89,7 +89,7 @@ public class AutoRebootPlugin extends Plugin {
     }
 
     public boolean shouldReboot() {
-        return debugAlwaysReboot || operatingSystem.getSystemUptime() > uptimeThreshold;
+        return !ProxyPacketListenerImpl.rebootAccepted.get() && (debugAlwaysReboot || operatingSystem.getSystemUptime() > uptimeThreshold);
     }
 
     @NotNull
