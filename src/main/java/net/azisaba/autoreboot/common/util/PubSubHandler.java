@@ -211,7 +211,12 @@ public class PubSubHandler implements Closeable {
         @Override
         public void onMessage(byte[] channel, byte[] message) {
             if (Arrays.equals(CHANNEL, channel)) {
-                PubSubHandler.this.processRawMessage(message);
+                try {
+                    PubSubHandler.this.processRawMessage(message);
+                } catch (Exception e) {
+                    logger.warn("Error while processing message");
+                    e.printStackTrace();
+                }
             }
         }
 
