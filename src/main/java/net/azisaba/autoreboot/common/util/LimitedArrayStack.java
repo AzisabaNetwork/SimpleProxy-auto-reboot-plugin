@@ -81,19 +81,58 @@ public class LimitedArrayStack<E> extends AbstractCollection<E> {
     @Contract("_ -> fail")
     @Override
     public boolean remove(Object o) {
-        throw new UnsupportedOperationException("#remove is not supported. Use #pop to remove the last element.");
+        boolean popped = false;
+        LimitedArrayStack<E> stack = new LimitedArrayStack<>(size());
+        while (!isEmpty()) {
+            E e = pop();
+            if (!Objects.equals(e, o)) {
+                stack.push(e);
+            } else {
+                popped = true;
+            }
+        }
+        while (!stack.isEmpty()) {
+            push(stack.pop());
+        }
+        return popped;
     }
 
     @Contract("_ -> fail")
     @Override
     public boolean removeIf(Predicate<? super E> filter) {
-        throw new UnsupportedOperationException("#removeIf is not supported. Use #pop to remove the last element.");
+        boolean popped = false;
+        LimitedArrayStack<E> stack = new LimitedArrayStack<>(size());
+        while (!isEmpty()) {
+            E e = pop();
+            if (!filter.test(e)) {
+                stack.push(e);
+            } else {
+                popped = true;
+            }
+        }
+        while (!stack.isEmpty()) {
+            push(stack.pop());
+        }
+        return popped;
     }
 
     @Contract("_ -> fail")
     @Override
     public boolean removeAll(@NotNull Collection<?> c) {
-        throw new UnsupportedOperationException("#removeAll is not supported. Use #pop to remove the last element.");
+        boolean popped = false;
+        LimitedArrayStack<E> stack = new LimitedArrayStack<>(size());
+        while (!isEmpty()) {
+            E e = pop();
+            if (!c.contains(e)) {
+                stack.push(e);
+            } else {
+                popped = true;
+            }
+        }
+        while (!stack.isEmpty()) {
+            push(stack.pop());
+        }
+        return popped;
     }
 
     /**
