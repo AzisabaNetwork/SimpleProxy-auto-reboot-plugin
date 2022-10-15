@@ -1,5 +1,6 @@
 package net.azisaba.autoreboot.velocity.util;
 
+import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -11,8 +12,7 @@ public class PlayerUtil {
         try {
             ClassLoader cl = proxy.getPluginManager()
                     .getPlugin("bungee-proxy-announcer")
-                    .orElseThrow(RuntimeException::new)
-                    .getInstance()
+                    .flatMap(PluginContainer::getInstance)
                     .orElseThrow(RuntimeException::new)
                     .getClass()
                     .getClassLoader();
