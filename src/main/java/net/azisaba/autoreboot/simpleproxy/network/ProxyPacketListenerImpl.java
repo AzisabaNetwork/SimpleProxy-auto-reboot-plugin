@@ -4,7 +4,7 @@ import net.azisaba.autoreboot.common.Util;
 import net.azisaba.autoreboot.common.network.ProxyPacketListener;
 import net.azisaba.autoreboot.common.network.protocol.ProxyboundRebootAckPacket;
 import net.azisaba.autoreboot.simpleproxy.AutoRebootPlugin;
-import net.azisaba.simpleProxy.proxy.ProxyInstance;
+import net.azisaba.simpleproxy.proxy.ProxyInstance;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;

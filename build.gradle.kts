@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.azisaba"
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(11))
@@ -13,6 +13,7 @@ java {
 repositories {
     mavenCentral()
     maven { url = uri("https://nexus.velocitypowered.com/repository/maven-public/") }
+    maven { url = uri("https://repo.azisaba.net/repository/maven-public/") }
     maven { url = uri("https://repo.acrylicstyle.xyz/repository/maven-public/") }
     maven { url = uri("https://jitpack.io/") }
 }
@@ -22,7 +23,7 @@ dependencies {
     implementation("redis.clients:jedis:4.2.3")
     annotationProcessor("com.velocitypowered:velocity-api:3.0.1")
     compileOnly("com.velocitypowered:velocity-api:3.0.1")
-    compileOnly("net.azisaba.simpleProxy:proxy:1.1.2") // AzisabaNetwork/SimpleProxy
+    compileOnly("net.azisaba.simpleproxy:proxy:2.0.0") // AzisabaNetwork/SimpleProxy
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 

@@ -8,13 +8,13 @@ import net.azisaba.autoreboot.common.network.protocol.BackendboundRebootRequestP
 import net.azisaba.autoreboot.common.util.JedisBox;
 import net.azisaba.autoreboot.common.util.LimitedArrayStack;
 import net.azisaba.autoreboot.simpleproxy.network.ProxyPacketListenerImpl;
-import net.azisaba.simpleProxy.api.event.EventHandler;
-import net.azisaba.simpleProxy.api.event.EventPriority;
-import net.azisaba.simpleProxy.api.event.connection.RemoteConnectionActiveEvent;
-import net.azisaba.simpleProxy.api.event.proxy.ProxyShutdownEvent;
-import net.azisaba.simpleProxy.api.plugin.Plugin;
-import net.azisaba.simpleProxy.api.yaml.YamlConfiguration;
-import net.azisaba.simpleProxy.api.yaml.YamlObject;
+import net.azisaba.simpleproxy.api.event.EventHandler;
+import net.azisaba.simpleproxy.api.event.EventPriority;
+import net.azisaba.simpleproxy.api.event.connection.RemoteConnectionActiveEvent;
+import net.azisaba.simpleproxy.api.event.proxy.ProxyShutdownEvent;
+import net.azisaba.simpleproxy.api.plugin.Plugin;
+import net.azisaba.simpleproxy.api.yaml.YamlConfiguration;
+import net.azisaba.simpleproxy.api.yaml.YamlObject;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +77,7 @@ public class AutoRebootPlugin extends Plugin {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onRemoteConnectionActivation(RemoteConnectionActiveEvent e) {
-        if (e.getListenerInfo().getProtocol() != net.azisaba.simpleProxy.api.config.Protocol.TCP) {
+        if (e.getListenerInfo().getProtocol() != net.azisaba.simpleproxy.api.config.Protocol.TCP) {
             return;
         }
         if (!shouldReboot()) {
